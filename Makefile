@@ -1,4 +1,5 @@
-DIRS = ./Hello_World_Module
+EXCLUDE :=
+DIRS    := $(filter-out $(EXCLUDE), $(wildcard */))
 
 all clean check: $(DIRS)
 $(DIRS):
