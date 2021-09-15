@@ -1,9 +1,9 @@
 EXCLUDE :=
 DIRS    := $(filter-out $(EXCLUDE), $(wildcard */))
 
-all clean check: $(DIRS)
+$(MY_TARGETS): $(DIRS)
 $(DIRS):
 	$(info inside dirs)
 	$(MAKE) -C $@ $(MAKECMDGOALS)
 
-.PHONY: all check $(DIRS)
+.PHONY: $(MY_TARGETS) $(DIRS)
