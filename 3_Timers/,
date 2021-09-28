@@ -1,0 +1,55 @@
+#include <linux/module.h>       // module_init, module_exit, MODULE_*
+#include <linux/init.h>         // __init, __exit macros
+#include <linux/kernel.h>       // printk, pr_info, ...
+#include <linux/timer.h>
+
+// A timer is represented in the kernel as an instance of timer_list
+//
+static struct timer_list my_timer;
+
+void my_timer_cb(struct timer_list *timer)
+{
+        pr_info("Timer cb: HZ = %d\n", HZ);
+        pr_info("Timer cb: %s called (%ld) with argument %d.\n",
+                __FUNCTION__, jiffies, timer->flags);
+}
+
+static int __init my_init(void)
+{
+        int retval;
+        printk("Timer module loaded\n");
+        
+        // Initialize the timer with my_timer_cb callback and 0 as an arg.
+        //
+        timer_setup(&my_timer, my_timer_cb, 0);
+
+        printk("Setup timer to fire in 3000ms (%ld)\n", jiffies);
+        // mod_timer is equivalent to:
+        // del_timer(timer);
+        // timer->expires = expires;
+        // add_timer(timer);    // FIRES the timer.
+        retval = mod_timer(&my_timer, jiffies + msecs_to_jiffies(99999));
+        if (retval) {
+                pr_err("Timer firing failed\n");
+        }
+
+        return 0;
+}
+
+static void __exit my_exit(void)
+{
+        int retval;
+        retval = del_timer_sync(&my_timer);
+        if (retval) {
+            printk("The timer is still in use...\n");
+        }
+
+        pr_info("Timer: module unloaded\n");
+}
+
+module_init(my_init);
+module_exit(my_exit);
+
+MODULE_AUTHOR("Ángel Pérez <groverperezm-2000@hotmail.com>");
+MODULE_DESCRIPTION("Standard timer example");
+MODULE_LICENSE("GPL");
